@@ -1,0 +1,5 @@
+ERROR:root:Error in generate_stream: 'async for' requires an object with __aiter__ method, got Stream
+ERROR:root:Error in generate_stream: 'async for' requires an object with __aiter__ method, got Stream
+ERROR:root:Error in generate_stream: 'Stream' object has no attribute '__aiter__'
+ERROR:root:Error in generate_stream: 'Stream' object has no attribute '__aiter__'
+ERROR:root:Error in generate_stream: 'Stream' object has no attribute '__aiter__'

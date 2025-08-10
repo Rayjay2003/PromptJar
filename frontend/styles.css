@@ -1,0 +1,120 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    width: 100%;
+}
+
+.title {
+    text-align: center;
+    color: #00cc99;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 204, 153, 0.5);
+}
+
+.form {
+    background: #2c2c2c;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-group label {
+    font-size: 1.1em;
+    color: #b0b0b0;
+}
+
+.input-group input,
+.input-group select {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #3a3a3a;
+    color: #e0e0e0;
+    font-size: 1em;
+    outline: none;
+    transition: background 0.3s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    background: #444444;
+}
+
+.submit-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background: #00cc99;
+    color: #fff;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.submit-btn:hover {
+    background: #00b386;
+    transform: translateY(-2px);
+}
+
+.result {
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    min-height: 400px;
+    max-height: 700px;
+    width: 100%;
+    overflow: auto;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #e0e0e0;
+    white-space: pre-wrap;
+}
+
+.result p {
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .title {
+        font-size: 2em;
+    }
+    .form {
+        padding: 15px;
+    }
+    .result {
+        min-height: 300px;
+        max-height: 500px;
+    }
+}
