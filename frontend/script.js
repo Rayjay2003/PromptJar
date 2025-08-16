@@ -70,64 +70,57 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
 // Function to format JSON with readable, spaced sections and uppercase titles
 function formatReadableJson(obj) {
     let html = '<div class="json-output">';
-    html += '<h3>GENERATED CONTENT</h3>';
+    html += '<h3>GENERATED CONTENT</h3>\n'; // Explicit newline
 
     if (obj.hooks) {
-        html += '<div class="section"><h4>HOOKS</h4><ul class="json-list">';
+        html += '<div class="section"><h4>HOOKS</h4><ul class="json-list">\n';
         obj.hooks.forEach((hook, index) => {
-            html += `<li>${index + 1}. <span class="value">${hook}</span></li>`;
+            html += `<li>${index + 1}. <span class="value">${hook}</span></li>\n`; // Newline after each item
         });
-        html += '</ul></div><div class="section-spacer"></div>';
+        html += '</ul></div><div class="section-spacer"></div>\n'; // Newline after spacer
     }
 
     if (obj.headlines) {
-        html += '<div class="section"><h4>HEADLINES</h4><ul class="json-list">';
+        html += '<div class="section"><h4>HEADLINES</h4><ul class="json-list">\n';
         obj.headlines.forEach((headline, index) => {
-            html += `<li>${index + 1}. <span class="value">${headline}</span></li>`;
+            html += `<li>${index + 1}. <span class="value">${headline}</span></li>\n`;
         });
-        html += '</ul></div><div class="section-spacer"></div>';
+        html += '</ul></div><div class="section-spacer"></div>\n';
     }
 
     if (obj.outline) {
-        html += '<div class="section"><h4>OUTLINE</h4>';
+        html += '<div class="section"><h4>OUTLINE</h4>\n';
         if (obj.outline.intro) {
-            html += `<p><strong>Intro:</strong> <span class="value">${obj.outline.intro}</span></p>`;
+            html += `<p><strong>Intro:</strong> <span class="value">${obj.outline.intro}</span></p>\n`;
         }
         if (obj.outline.sections) {
-            html += '<ul class="json-list">';
+            html += '<ul class="json-list">\n';
             obj.outline.sections.forEach((section, index) => {
-                html += `<li>${index + 1}. <span class="value">${section}</span></li>`;
+                html += `<li>${index + 1}. <span class="value">${section}</span></li>\n`;
             });
-            html += '</ul>';
+            html += '</ul>\n';
         }
-        html += '</div><div class="section-spacer"></div>';
+        html += '</div><div class="section-spacer"></div>\n';
     }
 
     if (obj.tweets) {
-        html += '<div class="section"><h4>TWEETS</h4><ul class="json-list">';
+        html += '<div class="section"><h4>TWEETS</h4><ul class="json-list">\n';
         obj.tweets.forEach((tweet, index) => {
-            html += `<li>${index + 1}. <span class="value">${tweet}</span></li>`;
+            html += `<li>${index + 1}. <span class="value">${tweet}</span></li>\n`;
         });
-        html += '</ul></div>';
+        html += '</ul></div>\n';
     }
 
     html += '</div>';
     return html;
 }
 
-// Copy to clipboard with robust handling using stored JSON
+// Copy to clipboard functionality
 document.getElementById('copyBtn').addEventListener('click', () => {
     const outputDiv = document.getElementById('output');
-    let textToCopy;
+    const textToCopy = outputDiv.textContent.trim(); // Get rendered text with line breaks
 
-    if (lastParsedJson) {
-        // Use the stored JSON for copying
-        textToCopy = JSON.stringify(lastParsedJson, null, 2); // Pretty-print with indentation
-    } else {
-        // Fallback to displayed text if no JSON is available
-        textToCopy = outputDiv.textContent.trim();
-    }
-
+    // Copy the text as-is to match the output format
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(textToCopy).then(() => {
             const btn = document.getElementById('copyBtn');
@@ -136,8 +129,8 @@ document.getElementById('copyBtn').addEventListener('click', () => {
                 btn.textContent = 'Copy to Clipboard';
             }, 2000);
         }).catch(err => {
-            console.error('Clipboard API failed:', err);
-            fallbackCopy(textToCopy);
+            console.error('Failed to copy: ', err);
+            alert('Copy failed. Please try again.');
         });
     } else {
         fallbackCopy(textToCopy);
@@ -159,8 +152,8 @@ function fallbackCopy(text) {
             btn.textContent = 'Copy to Clipboard';
         }, 2000);
     } catch (err) {
-        console.error('Fallback copy failed:', err);
-        alert('Copy failed. Please select the text manually and copy.');
+        console.error('Failed to copy raw text: ', err);
+        alert('Copy failed. Please try again.');
     } finally {
         document.body.removeChild(textarea);
     }
