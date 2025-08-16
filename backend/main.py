@@ -8,14 +8,20 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import json
+from fastapi.staticfiles import StaticFiles
+from dotenv import load_dotenv
 
 app = FastAPI()
 logging.basicConfig(filename='promptjar_errors.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+load_dotenv()  # Load .env file
 
-# Enable CORS for frontend
+# Mount static files from frontend
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+# Enable CORS for frontend (update deployed URL later)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "https://your-deployed-frontend.com"],  # Update with frontend URL
+    allow_origins=["http://localhost:8080", "*"],  # Use "*" for testing, replace with deployed URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,7 +35,6 @@ class InputData(BaseModel):
     num_sections: int = 3
     num_tweets: int = 3
 
-# Comprehensive list of niches
 NICHES = [
     "Tech", "Healthcare", "Finance", "Retail", "Education", "Agriculture", "Manufacturing",
     "Energy", "Entertainment", "Travel", "Fashion", "Sports", "Real Estate", "Food & Beverage",
@@ -48,13 +53,13 @@ async def generate(data: InputData):
     prompt = (
         f"Generate content for topic: {data.topic}, niche: {data.niche}. "
         f"Return ONLY a single, complete, valid JSON object with NO additional text, markdown, or formatting "
-        f"(e.g., no ```json, no extra spaces, no explanations). Include:\n"
+        f"(e.g., no ```json```). Include:\n"
         f"- {data.num_hooks} hooks (attention-grabbing opening lines)\n"
         f"- {data.num_headlines} headlines (engaging titles)\n"
         f"- An outline with an intro (1-2 sentences) and {data.num_sections} sections (brief titles)\n"
         f"- {data.num_tweets} tweets (short, engaging posts under 280 characters)\n"
         f"The output must be a complete JSON object starting with '{{' and ending with '}}' with no preceding or following characters. "
-        f"Do not add any text before or after the JSON."
+        "Ensure the entire response is a single JSON object and avoid multiple objects or trailing data."
     )
     logging.info(f"Sending prompt: {prompt}")
 
@@ -68,53 +73,48 @@ async def generate(data: InputData):
     )
 
     async def generate_stream():
-        loop = asyncio.get_event_loop()
         with ThreadPoolExecutor() as pool:
             try:
                 response = client.chat.completions.create(
                     model="deepseek/deepseek-r1:free",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
+                    messages=[{"role": "user", "content": prompt}],
                     stream=True,
-                    max_tokens=2000,  # Increased to ensure full response
+                    max_tokens=2000,
                 )
                 logging.info("API call initiated")
                 full_content = ""
-                # Run synchronous iteration in a thread
-                chunks = await loop.run_in_executor(pool, lambda: list(response))
+                chunks = await asyncio.get_running_loop().run_in_executor(pool, lambda: list(response))
                 logging.info(f"Received {len(chunks)} chunks")
                 for chunk in chunks:
                     if chunk.choices[0].delta.content is not None:
                         content = chunk.choices[0].delta.content
                         full_content += content
-                        logging.debug(f"Chunk content: {content}")
-                # Clean the output aggressively
+                        logging.debug(f"Chunk content: {content[:100]}...")  # Limit log size
                 full_content = full_content.strip()
-                if full_content.startswith("```json"):
-                    full_content = full_content[len("```json"):].lstrip()
-                if full_content.endswith("```"):
-                    full_content = full_content[:-len("```")].rstrip()
-                # Extract and validate the first complete JSON object
-                start_idx = full_content.find("{")
-                end_idx = full_content.rfind("}") + 1
-                if start_idx != -1 and end_idx > start_idx:
-                    potential_json = full_content[start_idx:end_idx]
-                    try:
-                        # Parse and re-serialize to ensure a complete object
-                        parsed_json = json.loads(potential_json)
-                        cleaned_content = json.dumps(parsed_json)
-                        logging.info(f"Cleaned content: {cleaned_content}")
-                        yield f"data: {cleaned_content}\n\n"
-                    except json.JSONDecodeError as e:
-                        logging.warning(f"Invalid JSON generated: {str(e)}. Content snippet: {potential_json[:100]}...")
-                        yield f"data: {{\"error\": \"Invalid JSON generated: {str(e)}\"}}\n\n"
-                else:
-                    logging.warning(f"No valid JSON object found in: {full_content[:100]}...")
-                    yield f"data: {{\"error\": \"No valid JSON object found\"}}\n\n"
+                # Attempt to parse the full content directly
+                try:
+                    parsed_json = json.loads(full_content)
+                    cleaned_content = json.dumps(parsed_json)
+                    logging.info(f"Cleaned content: {cleaned_content}")
+                    yield f"data: {cleaned_content}\n\n"
+                except json.JSONDecodeError as e:
+                    logging.warning(f"Invalid JSON generated: {str(e)}. Full content snippet: {full_content[:200]}...")
+                    # Fallback: Try to extract the first valid JSON object
+                    start_idx = full_content.find("{")
+                    end_idx = full_content.rfind("}") + 1
+                    if start_idx != -1 and end_idx > start_idx:
+                        potential_json = full_content[start_idx:end_idx]
+                        try:
+                            parsed_json = json.loads(potential_json)
+                            cleaned_content = json.dumps(parsed_json)
+                            logging.info(f"Extracted valid JSON: {cleaned_content}")
+                            yield f"data: {cleaned_content}\n\n"
+                        except json.JSONDecodeError as e2:
+                            logging.error(f"Failed to extract valid JSON: {str(e2)}. Content: {potential_json[:200]}...")
+                            yield f"data: {{\"error\": \"Failed to parse JSON: {str(e2)}\"}}\n\n"
+                    else:
+                        logging.error(f"No valid JSON object found in: {full_content[:200]}...")
+                        yield f"data: {{\"error\": \"No valid JSON object found\"}}\n\n"
             except Exception as e:
                 logging.error(f"Error in generate_stream: {str(e)}")
                 yield f"data: {{\"error\": \"{str(e)}\"}}\n\n"
@@ -123,4 +123,9 @@ async def generate(data: InputData):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    logging.info("Health check requested")
+    try:
+        return {"status": "healthy"}
+    except Exception as e:
+        logging.error(f"Health check failed: {str(e)}")
+        raise
