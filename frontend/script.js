@@ -1,5 +1,5 @@
 // Global config
-const API_URL = 'http://localhost:8000/generate';
+const API_URL = 'https://promptjar.onrender.com/generate';  // Updated to live backend URL
 
 let lastParsedJson = null; // Store the last successfully parsed JSON
 
@@ -7,6 +7,10 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
     e.preventDefault();
     const topic = document.getElementById('topic').value;
     const niche = document.getElementById('niche').value;
+    const numHooks = parseInt(document.getElementById('numHooks')?.value) || 3;  // Default to 3 if not found
+    const numHeadlines = parseInt(document.getElementById('numHeadlines')?.value) || 3;
+    const numSections = parseInt(document.getElementById('numSections')?.value) || 3;
+    const numTweets = parseInt(document.getElementById('numTweets')?.value) || 3;
     const resultDiv = document.getElementById('result');
     const outputDiv = document.getElementById('output');
     const copyBtn = document.getElementById('copyBtn');
@@ -19,7 +23,7 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ topic, niche }),
+            body: JSON.stringify({ topic, niche, num_hooks: numHooks, num_headlines: numHeadlines, num_sections: numSections, num_tweets: numTweets }),
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
