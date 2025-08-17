@@ -3,50 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PromptJar</title>
+    <title>PromptJar - AI Content Generator</title>
+    <meta name="description" content="Generate hooks, headlines, outlines, and tweets for any topic with AI">
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫙</text></svg>">
 </head>
 <body>
     <div class="container">
-        <h1 class="title">PromptJar</h1>
-        <form id="generateForm" class="form">
-            <div class="input-group">
-                <label for="topic">Topic:</label>
-                <input type="text" id="topic" name="topic" required placeholder="e.g., Gun Violence">
-            </div>
-            <div class="input-group">
-                <label for="niche">Niche:</label>
-                <select id="niche" name="niche" required>
-                    <option value="Tech">Tech</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Education">Education</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Sustainability">Sustainability</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="numHooks">Number of Hooks:</label>
-                <input type="number" id="numHooks" name="numHooks" min="1" value="3">
-            </div>
-            <div class="input-group">
-                <label for="numHeadlines">Number of Headlines:</label>
-                <input type="number" id="numHeadlines" name="numHeadlines" min="1" value="3">
-            </div>
-            <div class="input-group">
-                <label for="numSections">Number of Sections:</label>
-                <input type="number" id="numSections" name="numSections" min="1" value="3">
-            </div>
-            <div class="input-group">
-                <label for="numTweets">Number of Tweets:</label>
-                <input type="number" id="numTweets" name="numTweets" min="1" value="3">
-            </div>
-            <button type="submit" class="submit-btn">Generate</button>
-        </form>
-        <div id="result" class="result">
-            <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
-            <div id="output" class="output"></div>
-        </div>
+        <header>
+            <h1 class="title">🫙 PromptJar</h1>
+            <p style="text-align: center; color: #b0b0b0; margin-bottom: 20px; font-size: 1.1em;">
+                Generate engaging content with AI - hooks, headlines, outlines & tweets
+            </p>
+        </header>
+
+        <main>
+            <form id="generateForm" class="form" aria-label="Content Generation Form">
+                <div class="input-group">
+                    <label for="topic">Topic <span style="color: #e74c3c;">*</span></label>
+                    <input 
+                        type="text" 
+                        id="topic" 
+                        name="topic" 
+                        required 
+                        placeholder="e.g., Sustainable Technology, Digital Marketing Trends"
+                        maxlength="100"
+                        aria-describedby="topic-help"
+                    >
+                    <small id="topic-help" style="color: #888; font-size: 0.9em;">
+                        Describe your content topic (max 100 characters)
+                    </small>
+                </div>
+
+                <div class="input-group">
+                    <label for="niche">Industry/Niche <span style="color: #e74c3c;">*</span></label>
+                    <select id="niche" name="niche" required aria-describedby="niche-help">
+                        <option value="">Select an industry...</option>
+                        <option value="Tech">Tech</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Retail">Retail</option>
+                        <option value="Education">Education</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Energy">Energy</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Food & Beverage">Food & Beverage</option>
+                        <option value="Automotive">Automotive</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Legal">Legal</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Cybersecurity">Cybersecurity</option>
+                        <option value="Sustainability">Sustainability</option>
+                        <option value="Aerospace">Aerospace</option>
+                        <option value="Life Sciences">Life Sciences</option>
+                        <option value="Media">Media</option>
+                        <option value="Logistics">Logistics</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Hospitality">Hospitality</option>
+                        <option value="Government">Government</option>
+                        <option value="Non-Profit">Non-Profit</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Fitness">Fitness</option>
+                        <option value="E-commerce">E-commerce</option>
+                        <option value="Beauty">Beauty</option>
+                        <option value="Emerging Tech">Emerging Tech</option>
+                    </select>
+                    <small id="niche-help" style="color: #888; font-size: 0.9em;">
+                        Choose the industry context for your content
+                    </small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="input-group">
+                        <label for="numHooks">Hooks</label>
+                        <input 
+                            type="number" 
+                            id="numHooks" 
+                            name="numHooks" 
+                            min="1" 
+                            max="10" 
+                            value="3"
+                            aria-describedby="hooks-help"
+                        >
+                        <small id="hooks-help" style="color: #888; font-size: 0.85em;">
+                            Attention-grabbing openers
+                        </small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="numHeadlines">Headlines</label>
+                        <input 
+                            type="number" 
+                            id="numHeadlines" 
+                            name="numHeadlines" 
+                            min="1" 
+                            max="10" 
+                            value="3"
+                            aria-describedby="headlines-help"
+                        >
+                        <small id="headlines-help" style="color: #888; font-size: 0.85em;">
+                            Compelling titles
+                        </small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="numSections">Sections</label>
+                        <input 
+                            type="number" 
+                            id="numSections" 
+                            name="numSections" 
+                            min="1" 
+                            max="10" 
+                            value="3"
+                            aria-describedby="sections-help"
+                        >
+                        <small id="sections-help" style="color: #888; font-size: 0.85em;">
+                            Outline sections
+                        </small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="numTweets">Tweets</label>
+                        <input 
+                            type="number" 
+                            id="numTweets" 
+                            name="numTweets" 
+                            min="1" 
+                            max="10" 
+                            value="3"
+                            aria-describedby="tweets-help"
+                        >
+                        <small id="tweets-help" style="color: #888; font-size: 0.85em;">
+                            Social media posts
+                        </small>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    ✨ Generate Content
+                </button>
+            </form>
+
+            <section id="result" class="result" role="region" aria-label="Generated Content">
+                <button id="copyBtn" class="copy-btn" aria-label="Copy generated content to clipboard">
+                    📋 Copy to Clipboard
+                </button>
+                <div id="output" class="output" role="main">
+                    <div style="text-align: center; color: #888; padding: 40px 20px;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">🤖</div>
+                        <p style="font-size: 1.2em; margin-bottom: 10px;">Ready to Generate!</p>
+                        <p style="font-size: 1em; opacity: 0.8;">Fill out the form above to create engaging content with AI</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer style="text-align: center; margin-top: 40px; padding: 20px; color: #666; font-size: 0.9em;">
+            <p>Powered by AI • Generate hooks, headlines, outlines & tweets instantly</p>
+        </footer>
     </div>
 
     <script src="script.js"></script>
