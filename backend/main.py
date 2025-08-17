@@ -26,8 +26,8 @@ load_dotenv()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://promptjar.pxxl.click"  # Update with actual Netlify URL
-        # Remove local hosts after testing
+        "https://prompt-jar.vercel.app",  # New frontend URL
+        # Remove or comment out local hosts after testing
         # "http://localhost:3000",
         # "http://localhost:5173",
         # "http://127.0.0.1:3000",
