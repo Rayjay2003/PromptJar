@@ -7,6 +7,7 @@ let lastParsedJson = null; // Store the last successfully parsed JSON
 // Test backend connection on page load
 document.addEventListener('DOMContentLoaded', async () => {
     await testBackendConnection();
+    addClearButton(); // Add clear button on load
 });
 
 async function testBackendConnection() {
@@ -32,7 +33,6 @@ async function testBackendConnection() {
 }
 
 function showStatus(message, type) {
-    // Create or update status indicator
     let statusEl = document.getElementById('connectionStatus');
     if (!statusEl) {
         statusEl = document.createElement('div');
@@ -53,7 +53,6 @@ function showStatus(message, type) {
     statusEl.textContent = message;
     statusEl.className = `status-${type}`;
     
-    // Add CSS for status types
     if (type === 'success') {
         statusEl.style.backgroundColor = '#d4edda';
         statusEl.style.color = '#155724';
@@ -64,7 +63,6 @@ function showStatus(message, type) {
         statusEl.style.border = '1px solid #f5c6cb';
     }
     
-    // Auto-hide success messages
     if (type === 'success') {
         setTimeout(() => {
             statusEl.style.opacity = '0';
@@ -83,7 +81,6 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
     const numSections = parseInt(document.getElementById('numSections')?.value) || 3;
     const numTweets = parseInt(document.getElementById('numTweets')?.value) || 3;
     
-    // Validation
     if (!topic) {
         showStatus('Please enter a topic', 'error');
         return;
@@ -98,7 +95,6 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
     const outputDiv = document.getElementById('output');
     const copyBtn = document.getElementById('copyBtn');
     
-    // Show loading state
     resultDiv.classList.add('loading');
     outputDiv.innerHTML = '<div class="loading-spinner">🔄 Generating content...</div>';
     copyBtn.style.display = 'none';
@@ -139,13 +135,13 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
             
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
-            buffer = lines.pop(); // Keep incomplete line in buffer
+            buffer = lines.pop();
 
             for (const line of lines) {
                 console.log('Processing line:', line);
                 
                 if (line.startsWith('data: ')) {
-                    const data = line.slice(6).trim(); // Remove 'data: ' prefix
+                    const data = line.slice(6).trim();
                     
                     if (data && data !== '[DONE]') {
                         fullData += data;
@@ -173,7 +169,6 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
                 console.error('JSON Parse Error:', parseError);
                 console.log('Raw data that failed to parse:', fullData);
                 
-                // Try to extract JSON from the data
                 const jsonMatch = fullData.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
                     try {
@@ -230,14 +225,12 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
     }
 });
 
-// Function to escape HTML for safe display
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-// Function to format JSON with readable, spaced sections and uppercase titles
 function formatReadableJson(obj) {
     let html = '<div class="json-output">';
     html += '<h3>✨ GENERATED CONTENT</h3>\n';
@@ -245,7 +238,7 @@ function formatReadableJson(obj) {
     if (obj.hooks && Array.isArray(obj.hooks)) {
         html += '<div class="section"><h4>🎣 HOOKS</h4><ul class="json-list">\n';
         obj.hooks.forEach((hook, index) => {
-            html += `<li>${index + 1}. <span class="value">${escapeHtml(hook)}</span></li>\n`;
+            html += `<li>${index + 1}. <span class="text">${escapeHtml(hook)}</span></li>\n`; // Changed to .text class
         });
         html += '</ul></div><div class="section-spacer"></div>\n';
     }
@@ -253,7 +246,7 @@ function formatReadableJson(obj) {
     if (obj.headlines && Array.isArray(obj.headlines)) {
         html += '<div class="section"><h4>📰 HEADLINES</h4><ul class="json-list">\n';
         obj.headlines.forEach((headline, index) => {
-            html += `<li>${index + 1}. <span class="value">${escapeHtml(headline)}</span></li>\n`;
+            html += `<li>${index + 1}. <span class="text">${escapeHtml(headline)}</span></li>\n`; // Changed to .text class
         });
         html += '</ul></div><div class="section-spacer"></div>\n';
     }
@@ -261,12 +254,12 @@ function formatReadableJson(obj) {
     if (obj.outline) {
         html += '<div class="section"><h4>📋 OUTLINE</h4>\n';
         if (obj.outline.intro) {
-            html += `<p><strong>Intro:</strong> <span class="value">${escapeHtml(obj.outline.intro)}</span></p>\n`;
+            html += `<p><strong>Intro:</strong> <span class="text">${escapeHtml(obj.outline.intro)}</span></p>\n`; // Changed to .text class
         }
         if (obj.outline.sections && Array.isArray(obj.outline.sections)) {
             html += '<ul class="json-list">\n';
             obj.outline.sections.forEach((section, index) => {
-                html += `<li>${index + 1}. <span class="value">${escapeHtml(section)}</span></li>\n`;
+                html += `<li>${index + 1}. <span class="text">${escapeHtml(section)}</span></li>\n`; // Changed to .text class
             });
             html += '</ul>\n';
         }
@@ -276,7 +269,7 @@ function formatReadableJson(obj) {
     if (obj.tweets && Array.isArray(obj.tweets)) {
         html += '<div class="section"><h4>🐦 TWEETS</h4><ul class="json-list">\n';
         obj.tweets.forEach((tweet, index) => {
-            html += `<li>${index + 1}. <span class="value">${escapeHtml(tweet)}</span></li>\n`;
+            html += `<li>${index + 1}. <span class="text">${escapeHtml(tweet)}</span></li>\n`; // Changed to .text class
         });
         html += '</ul></div>\n';
     }
@@ -285,7 +278,6 @@ function formatReadableJson(obj) {
     return html;
 }
 
-// Enhanced copy to clipboard functionality
 document.getElementById('copyBtn').addEventListener('click', async () => {
     if (!lastParsedJson) {
         showStatus('No content to copy', 'error');
@@ -296,7 +288,6 @@ document.getElementById('copyBtn').addEventListener('click', async () => {
     const originalText = btn.textContent;
 
     try {
-        // Create formatted text for clipboard
         let textToCopy = 'GENERATED CONTENT\n\n';
         
         if (lastParsedJson.hooks) {
@@ -335,11 +326,9 @@ document.getElementById('copyBtn').addEventListener('click', async () => {
             });
         }
 
-        // Try modern clipboard API first
         if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(textToCopy);
         } else {
-            // Fallback for older browsers
             await fallbackCopy(textToCopy);
         }
 
@@ -387,7 +376,46 @@ function fallbackCopy(text) {
     });
 }
 
-// Enhanced loading state styling
+function addClearButton() {
+    const resultDiv = document.getElementById('result');
+    let clearBtn = document.getElementById('clearBtn');
+    if (!clearBtn) {
+        clearBtn = document.createElement('button');
+        clearBtn.id = 'clearBtn';
+        clearBtn.textContent = 'Clear';
+        clearBtn.style.cssText = `
+            display: block;
+            margin: 10px auto 0;
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        clearBtn.addEventListener('click', clearOutput);
+        resultDiv.appendChild(clearBtn);
+    }
+}
+
+function clearOutput() {
+    const form = document.getElementById('generateForm');
+    if (form) {
+        form.reset(); // Reset form fields
+    }
+    const outputDiv = document.getElementById('output');
+    if (outputDiv) {
+        outputDiv.innerHTML = ''; // Clear output
+    }
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+        copyBtn.style.display = 'none'; // Hide copy button
+    }
+    lastParsedJson = null; // Reset stored JSON
+    showStatus('Content cleared', 'success');
+}
+
 const style = document.createElement('style');
 style.textContent = `
     .result.loading .output {
@@ -448,8 +476,9 @@ style.textContent = `
         line-height: 1.4;
     }
     
-    .value {
-        color: #2c3e50;
+    .text { /* Replaced .value with .text */
+        color:white; /* Neutral color instead of blue */
+        font-weight: normal; /* Ensure no unintended bolding */
     }
     
     @keyframes spin {
