@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 import os
 import logging
@@ -17,7 +17,7 @@ load_dotenv()  # Load .env file
 # Enable CORS for frontend (update deployed URL later)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "*"],  # Use "*" for testing, replace with deployed URL
+    allow_origins=["http://localhost:8080", "*"],  # Use "*" for testing, replace with deployed URL (e.g., "https://promptjar.pxxl.click")
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,6 +38,14 @@ NICHES = [
     "Aerospace", "Life Sciences", "Media", "Logistics", "Construction", "Hospitality",
     "Government", "Non-Profit", "Arts", "Fitness", "E-commerce", "Beauty", "Emerging Tech"
 ]
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    return "<h1>API is running. Use /generate for content generation.</h1>"
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return {"message": "No favicon available"}
 
 @app.post("/generate")
 async def generate(data: InputData):
