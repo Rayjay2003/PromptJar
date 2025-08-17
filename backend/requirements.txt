@@ -1,6 +1,6 @@
 fastapi==0.111.0
 uvicorn==0.30.1
-openai==1.35.3  # Latest stable, avoids proxy issues
+openai==1.35.3  # Compatible with new API
 python-dotenv==1.0.1
-pydantic==2.8.2  # Updated version with better wheel support
-httpx==0.27.0  # Updated to match openai requirements
+pydantic==2.8.2
+httpx==0.27.0

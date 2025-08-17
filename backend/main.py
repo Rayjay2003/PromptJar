@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 import os
 import logging
-import openai
+from openai import OpenAI  # Updated import for new API
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -60,8 +60,9 @@ if not api_key:
     logger.error("OPENROUTER_API_KEY environment variable not set")
     raise ValueError("OPENROUTER_API_KEY environment variable not set")
 
-openai.api_key = api_key
-openai.api_base = "https://openrouter.ai/api/v1"
+# No longer needed with new client approach
+# openai.api_key = api_key
+# openai.api_base = "https://openrouter.ai/api/v1"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -105,7 +106,7 @@ async def health_check():
         return {
             "status": "healthy",
             "api_key_status": api_key_status,
-            "openai_base": openai.api_base
+            # Removed openai_base since it's handled by the client now
         }
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
@@ -154,11 +155,17 @@ async def generate(data: InputData):
 
     async def generate_stream():
         try:
+            # Initialize OpenAI client
+            client = OpenAI(
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+                base_url="https://openrouter.ai/api/v1"
+            )
+            
             # Use ThreadPoolExecutor for the synchronous OpenAI call
             with ThreadPoolExecutor() as executor:
                 response = await asyncio.get_event_loop().run_in_executor(
                     executor,
-                    lambda: openai.ChatCompletion.create(
+                    lambda: client.chat.completions.create(
                         model="deepseek/deepseek-r1:free",
                         messages=[{"role": "user", "content": prompt}],
                         stream=True,
@@ -166,63 +173,56 @@ async def generate(data: InputData):
                         temperature=0.7
                     )
                 )
-                
-                logger.info("API call initiated successfully")
-                full_content = ""
-                
-                # Process streaming response
-                for chunk in response:
-                    if 'choices' in chunk and len(chunk['choices']) > 0:
-                        delta = chunk['choices'][0].get('delta', {})
-                        if 'content' in delta:
-                            content = delta['content']
-                            full_content += content
-                
-                full_content = full_content.strip()
-                logger.info(f"Full content length: {len(full_content)}")
-                
-                # Clean and validate JSON
-                if full_content:
-                    try:
-                        # Try to parse the full content directly
-                        parsed_json = json.loads(full_content)
-                        cleaned_content = json.dumps(parsed_json, ensure_ascii=False)
-                        logger.info("Successfully parsed JSON response")
-                        yield f"data: {cleaned_content}\n\n"
-                        
-                    except json.JSONDecodeError as e:
-                        logger.warning(f"Initial JSON parsing failed: {str(e)}")
-                        
-                        # Try to extract JSON from the content
-                        start_idx = full_content.find("{")
-                        end_idx = full_content.rfind("}") + 1
-                        
-                        if start_idx != -1 and end_idx > start_idx:
-                            potential_json = full_content[start_idx:end_idx]
-                            try:
-                                parsed_json = json.loads(potential_json)
-                                cleaned_content = json.dumps(parsed_json, ensure_ascii=False)
-                                logger.info("Successfully extracted and parsed JSON")
-                                yield f"data: {cleaned_content}\n\n"
-                                
-                            except json.JSONDecodeError as e2:
-                                logger.error(f"Failed to extract valid JSON: {str(e2)}")
-                                error_response = {
-                                    "error": "Failed to generate valid JSON response",
-                                    "details": str(e2)
-                                }
-                                yield f"data: {json.dumps(error_response)}\n\n"
-                        else:
-                            logger.error("No JSON structure found in response")
+            
+            logger.info("API call initiated successfully")
+            full_content = ""
+            
+            # Process streaming response
+            for chunk in response:
+                if chunk.choices and len(chunk.choices) > 0:
+                    delta = chunk.choices[0].delta
+                    if delta.content:
+                        content = delta.content
+                        full_content += content
+            
+            full_content = full_content.strip()
+            logger.info(f"Full content length: {len(full_content)}")
+            
+            # Clean and validate JSON
+            if full_content:
+                try:
+                    parsed_json = json.loads(full_content)
+                    cleaned_content = json.dumps(parsed_json, ensure_ascii=False)
+                    logger.info("Successfully parsed JSON response")
+                    yield f"data: {cleaned_content}\n\n"
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Initial JSON parsing failed: {str(e)}")
+                    start_idx = full_content.find("{")
+                    end_idx = full_content.rfind("}") + 1
+                    if start_idx != -1 and end_idx > start_idx:
+                        potential_json = full_content[start_idx:end_idx]
+                        try:
+                            parsed_json = json.loads(potential_json)
+                            cleaned_content = json.dumps(parsed_json, ensure_ascii=False)
+                            logger.info("Successfully extracted and parsed JSON")
+                            yield f"data: {cleaned_content}\n\n"
+                        except json.JSONDecodeError as e2:
+                            logger.error(f"Failed to extract valid JSON: {str(e2)}")
                             error_response = {
-                                "error": "No valid JSON structure found in API response"
+                                "error": "Failed to generate valid JSON response",
+                                "details": str(e2)
                             }
                             yield f"data: {json.dumps(error_response)}\n\n"
-                else:
-                    logger.error("Empty response from API")
-                    error_response = {"error": "Empty response from API"}
-                    yield f"data: {json.dumps(error_response)}\n\n"
-                    
+                    else:
+                        logger.error("No JSON structure found in response")
+                        error_response = {
+                            "error": "No valid JSON structure found in API response"
+                        }
+                        yield f"data: {json.dumps(error_response)}\n\n"
+            else:
+                logger.error("Empty response from API")
+                error_response = {"error": "Empty response from API"}
+                yield f"data: {json.dumps(error_response)}\n\n"
         except Exception as e:
             logger.error(f"Error in generate_stream: {str(e)}")
             error_response = {
