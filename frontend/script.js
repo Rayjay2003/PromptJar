@@ -238,7 +238,7 @@ function formatReadableJson(obj) {
     if (obj.hooks && Array.isArray(obj.hooks)) {
         html += '<div class="section"><h4>🎣 HOOKS</h4><ul class="json-list">\n';
         obj.hooks.forEach((hook, index) => {
-            html += `<li>${index + 1}. <span class="text">${escapeHtml(hook)}</span></li>\n`; // Changed to .text class
+            html += `<li>${index + 1}. <span class="value">${escapeHtml(hook)}</span></li>\n`; // Changed to .value
         });
         html += '</ul></div><div class="section-spacer"></div>\n';
     }
@@ -246,7 +246,7 @@ function formatReadableJson(obj) {
     if (obj.headlines && Array.isArray(obj.headlines)) {
         html += '<div class="section"><h4>📰 HEADLINES</h4><ul class="json-list">\n';
         obj.headlines.forEach((headline, index) => {
-            html += `<li>${index + 1}. <span class="text">${escapeHtml(headline)}</span></li>\n`; // Changed to .text class
+            html += `<li>${index + 1}. <span class="value">${escapeHtml(headline)}</span></li>\n`; // Changed to .value
         });
         html += '</ul></div><div class="section-spacer"></div>\n';
     }
@@ -254,12 +254,12 @@ function formatReadableJson(obj) {
     if (obj.outline) {
         html += '<div class="section"><h4>📋 OUTLINE</h4>\n';
         if (obj.outline.intro) {
-            html += `<p><strong>Intro:</strong> <span class="text">${escapeHtml(obj.outline.intro)}</span></p>\n`; // Changed to .text class
+            html += `<p><strong>Intro:</strong> <span class="value">${escapeHtml(obj.outline.intro)}</span></p>\n`; // Changed to .value
         }
         if (obj.outline.sections && Array.isArray(obj.outline.sections)) {
             html += '<ul class="json-list">\n';
             obj.outline.sections.forEach((section, index) => {
-                html += `<li>${index + 1}. <span class="text">${escapeHtml(section)}</span></li>\n`; // Changed to .text class
+                html += `<li>${index + 1}. <span class="value">${escapeHtml(section)}</span></li>\n`; // Changed to .value
             });
             html += '</ul>\n';
         }
@@ -269,7 +269,7 @@ function formatReadableJson(obj) {
     if (obj.tweets && Array.isArray(obj.tweets)) {
         html += '<div class="section"><h4>🐦 TWEETS</h4><ul class="json-list">\n';
         obj.tweets.forEach((tweet, index) => {
-            html += `<li>${index + 1}. <span class="text">${escapeHtml(tweet)}</span></li>\n`; // Changed to .text class
+            html += `<li>${index + 1}. <span class="value">${escapeHtml(tweet)}</span></li>\n`; // Changed to .value
         });
         html += '</ul></div>\n';
     }
@@ -427,58 +427,115 @@ style.textContent = `
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        padding: 20px;
+        gap: 15px;
+        padding: 30px;
         font-size: 16px;
-        color: #666;
+        color: #b0b0b0;
     }
     
     .error {
         background: #f8d7da;
         color: #721c24;
         border: 1px solid #f5c6cb;
-        border-radius: 4px;
-        padding: 12px;
+        border-radius: 6px;
+        padding: 15px;
         margin: 10px 0;
+        border-left: 4px solid #e74c3c;
     }
     
     .error details {
-        margin-top: 10px;
+        margin-top: 12px;
     }
     
     .error summary {
         cursor: pointer;
         font-weight: bold;
+        padding: 5px;
+        border-radius: 4px;
+        background: rgba(231, 76, 60, 0.1);
+    }
+    
+    .error summary:hover {
+        background: rgba(231, 76, 60, 0.2);
     }
     
     .raw-data {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 10px;
-        max-height: 200px;
+        background: #2c2c2c;
+        border: 1px solid #444444;
+        border-radius: 6px;
+        padding: 15px;
+        max-height: 250px;
         overflow-y: auto;
         font-size: 12px;
         margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: 'Courier New', Courier, monospace;
+        line-height: 1.4;
+        color: #ccc;
+    }
+    
+    .raw-data::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .raw-data::-webkit-scrollbar-track {
+        background: #3a3a3a;
+        border-radius: 4px;
+    }
+    
+    .raw-data::-webkit-scrollbar-thumb {
+        background: #00cc99;
+        border-radius: 4px;
     }
     
     .section-spacer {
-        height: 20px;
+        height: 30px;
+    }
+    
+    .json-output {
+        background-color: #2c2c2c; /* Matches your theme */
+        border: 1px solid #3a3a3a; /* Subtle border */
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 10px;
+    }
+    
+    .section {
+        background-color: #3a3a3a; /* Matches your output background */
+        border: 1px solid #444444; /* Matches your output border */
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 10px;
     }
     
     .json-list {
-        margin: 10px 0;
-        padding-left: 20px;
+        list-style: none;
+        padding-left: 0;
     }
     
     .json-list li {
-        margin: 8px 0;
-        line-height: 1.4;
+        margin: 12px 0;
+        padding: 15px;
+        background: #444444;
+        border-radius: 8px;
+        font-size: 1.05em;
+        border-left: 3px solid #00cc99;
+        transition: all 0.2s ease;
     }
     
-    .text { /* Replaced .value with .text */
-        color:white; /* Neutral color instead of blue */
-        font-weight: normal; /* Ensure no unintended bolding */
+    .json-list li:hover {
+        background: #4a4a4a;
+        transform: translateX(2px);
+    }
+    
+    .value {
+        color: #ffffff; /* White text for dark theme */
+        font-weight: normal;
+    }
+    
+    h3, h4 {
+        color: #2c3e50;
+        margin-bottom: 5px;
     }
     
     @keyframes spin {

@@ -220,7 +220,7 @@ body {
 }
 
 .json-list .value {
-    color: #e0e0e0;
+    color: #ffffff; /* White text */
     word-break: break-word;
     line-height: 1.5;
 }
