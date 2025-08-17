@@ -1,6 +1,6 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-openai==1.3.8
-python-dotenv==1.0.0
-pydantic==2.5.0
-httpx==0.25.2
+fastapi==0.111.0
+uvicorn==0.30.1
+openai==1.35.3  # Latest stable, avoids proxy issues
+python-dotenv==1.0.1
+pydantic==2.8.2  # Updated version with better wheel support
+httpx==0.27.0  # Updated to match openai requirements
