@@ -17,7 +17,7 @@ load_dotenv()  # Load .env file
 # Enable CORS for frontend (update deployed URL later)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "*"],  # Use "*" for testing, replace with deployed URL (e.g., "https://promptjar.pxxl.click")
+    allow_origins=["http://localhost:8080", "https://prompt-jar.vercel.app/"],  # Use "*" for testing, replace with deployed URL (e.g., "https://promptjar.pxxl.click")
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
