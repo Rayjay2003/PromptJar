@@ -3,23 +3,20 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 import os
 import logging
-from openai import OpenAI
+import openai
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import json
 from dotenv import load_dotenv
+import requests
 
 app = FastAPI(title="PromptJar API", version="1.0.0")
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('promptjar.log'),
-        logging.StreamHandler()
-    ]
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -57,33 +54,15 @@ NICHES = [
     "Government", "Non-Profit", "Arts", "Fitness", "E-commerce", "Beauty", "Emerging Tech"
 ]
 
-# Initialize OpenAI client once at startup
+# Configure OpenAI for OpenRouter
 api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     logger.error("OPENROUTER_API_KEY environment variable not set")
     raise ValueError("OPENROUTER_API_KEY environment variable not set")
 
-try:
-    # Initialize OpenAI client with minimal configuration
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key
-    )
-    logger.info("OpenAI client initialized successfully")
-except Exception as e:
-    logger.error(f"Failed to initialize OpenAI client: {e}")
-    # Try alternative initialization
-    try:
-        import httpx
-        client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=api_key,
-            http_client=httpx.Client(timeout=60.0)
-        )
-        logger.info("OpenAI client initialized with custom http_client")
-    except Exception as e2:
-        logger.error(f"Failed to initialize OpenAI client with custom http_client: {e2}")
-        client = None
+# Set OpenAI configuration
+openai.api_key = api_key
+openai.api_base = "https://openrouter.ai/api/v1"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -123,15 +102,12 @@ async def favicon():
 async def health_check():
     """Health check endpoint"""
     try:
-        # Check if OpenAI client is available
-        client_status = "available" if client else "unavailable"
         api_key_status = "set" if api_key else "not set"
         
         return {
             "status": "healthy",
-            "client_status": client_status,
             "api_key_status": api_key_status,
-            "timestamp": asyncio.get_event_loop().time()
+            "openai_base": openai.api_base
         }
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
@@ -152,9 +128,6 @@ async def generate(data: InputData):
     
     if data.niche not in NICHES:
         raise HTTPException(status_code=400, detail=f"Invalid niche. Must be one of: {', '.join(NICHES)}")
-    
-    if not client:
-        raise HTTPException(status_code=503, detail="OpenAI client not available")
     
     # Validate number parameters
     for field, value in [
@@ -187,7 +160,7 @@ async def generate(data: InputData):
             with ThreadPoolExecutor() as executor:
                 response = await asyncio.get_event_loop().run_in_executor(
                     executor,
-                    lambda: client.chat.completions.create(
+                    lambda: openai.ChatCompletion.create(
                         model="deepseek/deepseek-r1:free",
                         messages=[{"role": "user", "content": prompt}],
                         stream=True,
@@ -199,17 +172,13 @@ async def generate(data: InputData):
                 logger.info("API call initiated successfully")
                 full_content = ""
                 
-                # Collect all chunks
-                chunks = await asyncio.get_event_loop().run_in_executor(
-                    executor, lambda: list(response)
-                )
-                
-                logger.info(f"Received {len(chunks)} chunks from API")
-                
-                for chunk in chunks:
-                    if hasattr(chunk, 'choices') and chunk.choices and chunk.choices[0].delta.content:
-                        content = chunk.choices[0].delta.content
-                        full_content += content
+                # Process streaming response
+                for chunk in response:
+                    if 'choices' in chunk and len(chunk['choices']) > 0:
+                        delta = chunk['choices'][0].get('delta', {})
+                        if 'content' in delta:
+                            content = delta['content']
+                            full_content += content
                 
                 full_content = full_content.strip()
                 logger.info(f"Full content length: {len(full_content)}")
