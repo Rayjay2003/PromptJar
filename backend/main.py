@@ -8,15 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import json
-from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 app = FastAPI()
 logging.basicConfig(filename='promptjar_errors.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv()  # Load .env file
-
-# Mount static files from frontend
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 # Enable CORS for frontend (update deployed URL later)
 app.add_middleware(
