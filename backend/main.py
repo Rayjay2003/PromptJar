@@ -9,7 +9,6 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import json
 from dotenv import load_dotenv
-import requests
 
 app = FastAPI(title="PromptJar API", version="1.0.0")
 
@@ -27,11 +26,12 @@ load_dotenv()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://prompt-jar.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173"
+        "https://promptjar.pxxl.click"  # Update with actual Netlify URL
+        # Remove local hosts after testing
+        # "http://localhost:3000",
+        # "http://localhost:5173",
+        # "http://127.0.0.1:3000",
+        # "http://127.0.0.1:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -60,7 +60,6 @@ if not api_key:
     logger.error("OPENROUTER_API_KEY environment variable not set")
     raise ValueError("OPENROUTER_API_KEY environment variable not set")
 
-# Set OpenAI configuration
 openai.api_key = api_key
 openai.api_base = "https://openrouter.ai/api/v1"
 
@@ -103,7 +102,6 @@ async def health_check():
     """Health check endpoint"""
     try:
         api_key_status = "set" if api_key else "not set"
-        
         return {
             "status": "healthy",
             "api_key_status": api_key_status,
@@ -234,21 +232,11 @@ async def generate(data: InputData):
             yield f"data: {json.dumps(error_response)}\n\n"
 
     return StreamingResponse(
-        generate_stream(), 
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
-        }
+        generate_stream(),
+        media_type="text/event-stream"
     )
 
-# Error handlers
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
     logger.error(f"Unhandled exception: {str(exc)}")
     return {"error": "Internal server error", "detail": str(exc)}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
