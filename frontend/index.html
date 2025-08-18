@@ -161,9 +161,21 @@
                         </optgroup>
                         <option value="custom">Enter Custom Niche...</option>
                     </select>
-                    <input type="text" id="customNiche" name="customNiche" style="display: none; width: 100%; margin-top: 5px; padding: 12px;" placeholder="Type your custom niche here" required>
+                    <input 
+                        type="text" 
+                        id="customNiche" 
+                        name="customNiche" 
+                        class="custom-niche-visible" 
+                        style="display: none; width: 100%; margin-top: 5px; padding: 12px;" 
+                        placeholder="Type your custom niche here" 
+                        required 
+                        aria-describedby="custom-niche-help"
+                    >
                     <small id="niche-help" style="color: #888; font-size: 0.9em;">
                         Choose or enter the context for your content
+                    </small>
+                    <small id="custom-niche-help" style="color: #888; font-size: 0.9em; display: none;">
+                        Enter your custom niche when "Enter Custom Niche..." is selected
                     </small>
                 </div>
 
@@ -233,7 +245,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn" id="submitBtn">
+                <button type="submit" class="submit-btn" id="submitBtn" style="display: block !important;">
                     ✨ Generate Content
                 </button>
             </form>

@@ -90,6 +90,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 10px;
+    display: block !important; /* Force visibility for debugging */
 }
 
 .submit-btn:hover:not(:disabled) {

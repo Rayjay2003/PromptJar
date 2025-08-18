@@ -426,14 +426,18 @@ function clearOutput() {
 
 function toggleCustomNiche(select) {
     const customInput = document.getElementById('customNiche');
+    const customNicheHelp = document.getElementById('custom-niche-help');
+    console.log('toggleCustomNiche called with value:', select.value); // Debug log
     if (select.value === 'custom') {
         customInput.classList.add('custom-niche-visible');
-        customInput.required = true; // Ensure it's required when visible
+        customInput.required = true;
         customInput.focus();
+        customNicheHelp.style.display = 'block';
     } else {
         customInput.classList.remove('custom-niche-visible');
-        customInput.required = false; // Remove required when hidden
+        customInput.required = false;
         customInput.value = '';
+        customNicheHelp.style.display = 'none';
     }
 }
 
