@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 import os
 import logging
-from openai import OpenAI  # Updated import for new API
+from openai import OpenAI
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -26,12 +26,7 @@ load_dotenv()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://prompt-jar.vercel.app",  # New frontend URL
-        # Remove or comment out local hosts after testing
-        # "http://localhost:3000",
-        # "http://localhost:5173",
-        # "http://127.0.0.1:3000",
-        # "http://127.0.0.1:5173"
+        "https://prompt-jar.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -47,11 +42,26 @@ class InputData(BaseModel):
     num_tweets: int = 3
 
 NICHES = [
-    "Tech", "Healthcare", "Finance", "Retail", "Education", "Agriculture", "Manufacturing",
-    "Energy", "Entertainment", "Travel", "Fashion", "Sports", "Real Estate", "Food & Beverage",
-    "Automotive", "Gaming", "Legal", "Marketing", "Cybersecurity", "Sustainability",
-    "Aerospace", "Life Sciences", "Media", "Logistics", "Construction", "Hospitality",
-    "Government", "Non-Profit", "Arts", "Fitness", "E-commerce", "Beauty", "Emerging Tech"
+    "entrepreneurship", "startups", "freelancing", "marketing", "personal-branding",
+    "motivation-self-improvement", "side-hustles", "remote-work-digital-nomad", "tech-ai",
+    "crypto-web3", "investing", "stock-market", "real-estate", "e-commerce", "saas",
+    "small-business", "business-strategy", "passive-income", "dropshipping", "finance-tips",
+    "budgeting-saving", "taxes", "crypto-nfts", "venture-capital", "social-media-marketing",
+    "email-marketing", "seo", "copywriting", "content-marketing", "sales-funnels",
+    "cold-outreach", "branding", "influencer-marketing", "affiliate-marketing",
+    "marketing-psychology", "analytics-metrics", "artificial-intelligence", "machine-learning",
+    "software-development", "web-development", "mobile-apps", "blockchain", "cybersecurity",
+    "data-science", "cloud-computing", "ui-ux-design", "no-code-low-code", "productivity",
+    "mindfulness", "mental-health", "fitness", "diet-nutrition", "minimalism", "habit-building",
+    "journaling", "time-management", "stoicism", "psychology", "daily-routines", "writing",
+    "art-illustration", "music", "photography", "filmmaking", "gaming", "fashion", "diy-crafts",
+    "animation", "design", "relationships", "dating", "parenting", "education", "news-commentary",
+    "memes-humor", "pop-culture", "politics", "language-learning", "philosophy", "indie-hackers",
+    "solopreneurs", "fire", "booktok-book-twitter", "fitness-twitter", "dev-twitter",
+    "money-twitter", "crypto-twitter", "ai-twitter", "writing-twitter", "design-twitter",
+    "meme-creators", "healthcare", "legal", "education-edtech", "hospitality", "logistics",
+    "manufacturing", "agriculture", "government-policy", "energy-sustainability", "aerospace",
+    "automotive", "sports-sports-tech"
 ]
 
 # Configure OpenAI for OpenRouter
@@ -59,10 +69,6 @@ api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     logger.error("OPENROUTER_API_KEY environment variable not set")
     raise ValueError("OPENROUTER_API_KEY environment variable not set")
-
-# No longer needed with new client approach
-# openai.api_key = api_key
-# openai.api_base = "https://openrouter.ai/api/v1"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -83,7 +89,7 @@ async def read_root():
 POST /generate
 {
     "topic": "AI and automation",
-    "niche": "Tech",
+    "niche": "artificial-intelligence",
     "num_hooks": 3,
     "num_headlines": 3,
     "num_sections": 3,
@@ -106,7 +112,6 @@ async def health_check():
         return {
             "status": "healthy",
             "api_key_status": api_key_status,
-            # Removed openai_base since it's handled by the client now
         }
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
@@ -125,8 +130,9 @@ async def generate(data: InputData):
     if not data.topic.strip() or len(data.topic) > 100:
         raise HTTPException(status_code=400, detail="Topic must be between 1 and 100 characters")
     
-    if data.niche not in NICHES:
-        raise HTTPException(status_code=400, detail=f"Invalid niche. Must be one of: {', '.join(NICHES)}")
+    # Allow custom niches by checking if it's in NICHES or a valid string
+    if data.niche not in NICHES and not data.niche.strip():
+        raise HTTPException(status_code=400, detail="Invalid or empty niche. Please select from the list or enter a valid custom niche")
     
     # Validate number parameters
     for field, value in [
@@ -155,13 +161,11 @@ async def generate(data: InputData):
 
     async def generate_stream():
         try:
-            # Initialize OpenAI client
             client = OpenAI(
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1"
             )
             
-            # Use ThreadPoolExecutor for the synchronous OpenAI call
             with ThreadPoolExecutor() as executor:
                 response = await asyncio.get_event_loop().run_in_executor(
                     executor,
@@ -177,7 +181,6 @@ async def generate(data: InputData):
             logger.info("API call initiated successfully")
             full_content = ""
             
-            # Process streaming response
             for chunk in response:
                 if chunk.choices and len(chunk.choices) > 0:
                     delta = chunk.choices[0].delta
@@ -188,7 +191,6 @@ async def generate(data: InputData):
             full_content = full_content.strip()
             logger.info(f"Full content length: {len(full_content)}")
             
-            # Clean and validate JSON
             if full_content:
                 try:
                     parsed_json = json.loads(full_content)

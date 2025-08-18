@@ -220,7 +220,7 @@ body {
 }
 
 .json-list .value {
-    color: #ffffff; /* White text */
+    color: #ffffff;
     word-break: break-word;
     line-height: 1.5;
 }
@@ -417,6 +417,11 @@ body {
         font-size: 12px;
         padding: 8px 12px;
     }
+    
+    #customNiche {
+        padding: 10px;
+        font-size: 16px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -433,7 +438,7 @@ body {
     .input-group input,
     .input-group select {
         padding: 10px;
-        font-size: 16px; /* Prevents zoom on iOS */
+        font-size: 16px;
     }
     
     .submit-btn {
@@ -448,11 +453,15 @@ body {
     .section h4 {
         font-size: 1.1em;
     }
+    
+    #customNiche {
+        padding: 8px;
+        font-size: 14px;
+    }
 }
 
 /* Dark mode enhancements */
 @media (prefers-color-scheme: dark) {
-    /* Already dark by default, but ensure consistency */
     body {
         color-scheme: dark;
     }
@@ -469,4 +478,25 @@ body {
     .json-list li {
         border: 1px solid #00cc99;
     }
+}
+
+/* Custom niche input */
+#customNiche {
+    display: none;
+    width: 100%;
+    margin-top: 5px;
+    padding: 12px;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    background: #3a3a3a;
+    color: #e0e0e0;
+    font-size: 1em;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#customNiche:focus {
+    background: #444444;
+    border-color: #00cc99;
+    box-shadow: 0 0 0 2px rgba(0, 204, 153, 0.2);
 }

@@ -6,6 +6,7 @@
     <title>PromptJar - AI Content Generator</title>
     <meta name="description" content="Generate hooks, headlines, outlines, and tweets for any topic with AI">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫙</text></svg>">
 </head>
 <body>
@@ -26,55 +27,143 @@
                         id="topic" 
                         name="topic" 
                         required 
-                        placeholder="e.g., Sustainable Technology, Digital Marketing Trends"
+                        placeholder="e.g., Sustainable Technology"
                         maxlength="100"
                         aria-describedby="topic-help"
                     >
                     <small id="topic-help" style="color: #888; font-size: 0.9em;">
                         Describe your content topic (max 100 characters)
                     </small>
+                    <button type="button" id="suggestTopicBtn" style="padding: 8px; margin-top: 5px; background: #00cc99; color: white; border: none; border-radius: 4px;">Suggest Topic</button>
                 </div>
 
                 <div class="input-group">
                     <label for="niche">Industry/Niche <span style="color: #e74c3c;">*</span></label>
-                    <select id="niche" name="niche" required aria-describedby="niche-help">
-                        <option value="">Select an industry...</option>
-                        <option value="Tech">Tech</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Education">Education</option>
-                        <option value="Agriculture">Agriculture</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Energy">Energy</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Real Estate">Real Estate</option>
-                        <option value="Food & Beverage">Food & Beverage</option>
-                        <option value="Automotive">Automotive</option>
-                        <option value="Gaming">Gaming</option>
-                        <option value="Legal">Legal</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Cybersecurity">Cybersecurity</option>
-                        <option value="Sustainability">Sustainability</option>
-                        <option value="Aerospace">Aerospace</option>
-                        <option value="Life Sciences">Life Sciences</option>
-                        <option value="Media">Media</option>
-                        <option value="Logistics">Logistics</option>
-                        <option value="Construction">Construction</option>
-                        <option value="Hospitality">Hospitality</option>
-                        <option value="Government">Government</option>
-                        <option value="Non-Profit">Non-Profit</option>
-                        <option value="Arts">Arts</option>
-                        <option value="Fitness">Fitness</option>
-                        <option value="E-commerce">E-commerce</option>
-                        <option value="Beauty">Beauty</option>
-                        <option value="Emerging Tech">Emerging Tech</option>
+                    <select id="niche" name="niche" required onchange="toggleCustomNiche(this)" aria-describedby="niche-help">
+                        <optgroup label="Business & Finance">
+                            <option value="entrepreneurship">Entrepreneurship</option>
+                            <option value="startups">Startups</option>
+                            <option value="freelancing">Freelancing</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="personal-branding">Personal Branding</option>
+                            <option value="motivation-self-improvement">Motivation / Self-Improvement</option>
+                            <option value="side-hustles">Side Hustles</option>
+                            <option value="remote-work-digital-nomad">Remote Work / Digital Nomad</option>
+                            <option value="tech-ai">Tech & AI</option>
+                            <option value="crypto-web3">Crypto & Web3</option>
+                            <option value="investing">Investing</option>
+                            <option value="stock-market">Stock Market</option>
+                            <option value="real-estate">Real Estate</option>
+                            <option value="e-commerce">E-commerce</option>
+                            <option value="saas">SaaS</option>
+                            <option value="small-business">Small Business</option>
+                            <option value="business-strategy">Business Strategy</option>
+                            <option value="passive-income">Passive Income</option>
+                            <option value="dropshipping">Dropshipping</option>
+                            <option value="finance-tips">Finance Tips</option>
+                            <option value="budgeting-saving">Budgeting & Saving</option>
+                            <option value="taxes">Taxes</option>
+                            <option value="crypto-nfts">Crypto / NFTs</option>
+                            <option value="venture-capital">Venture Capital</option>
+                        </optgroup>
+                        <optgroup label="Marketing & Sales">
+                            <option value="social-media-marketing">Social Media Marketing</option>
+                            <option value="email-marketing">Email Marketing</option>
+                            <option value="seo">SEO</option>
+                            <option value="copywriting">Copywriting</option>
+                            <option value="content-marketing">Content Marketing</option>
+                            <option value="sales-funnels">Sales Funnels</option>
+                            <option value="cold-outreach">Cold Outreach</option>
+                            <option value="branding">Branding</option>
+                            <option value="influencer-marketing">Influencer Marketing</option>
+                            <option value="affiliate-marketing">Affiliate Marketing</option>
+                            <option value="marketing-psychology">Marketing Psychology</option>
+                            <option value="analytics-metrics">Analytics & Metrics</option>
+                        </optgroup>
+                        <optgroup label="Tech & Development">
+                            <option value="artificial-intelligence">Artificial Intelligence (AI)</option>
+                            <option value="machine-learning">Machine Learning</option>
+                            <option value="software-development">Software Development</option>
+                            <option value="web-development">Web Development</option>
+                            <option value="mobile-apps">Mobile Apps</option>
+                            <option value="blockchain">Blockchain</option>
+                            <option value="cybersecurity">Cybersecurity</option>
+                            <option value="data-science">Data Science</option>
+                            <option value="cloud-computing">Cloud Computing</option>
+                            <option value="ui-ux-design">UI/UX Design</option>
+                            <option value="no-code-low-code">No-code / Low-code</option>
+                        </optgroup>
+                        <optgroup label="Self-Improvement & Lifestyle">
+                            <option value="productivity">Productivity</option>
+                            <option value="mindfulness">Mindfulness</option>
+                            <option value="mental-health">Mental Health</option>
+                            <option value="fitness">Fitness</option>
+                            <option value="diet-nutrition">Diet & Nutrition</option>
+                            <option value="minimalism">Minimalism</option>
+                            <option value="habit-building">Habit Building</option>
+                            <option value="journaling">Journaling</option>
+                            <option value="time-management">Time Management</option>
+                            <option value="stoicism">Stoicism</option>
+                            <option value="psychology">Psychology</option>
+                            <option value="daily-routines">Daily Routines</option>
+                        </optgroup>
+                        <optgroup label="Creative & Hobbies">
+                            <option value="writing">Writing</option>
+                            <option value="art-illustration">Art & Illustration</option>
+                            <option value="music">Music</option>
+                            <option value="photography">Photography</option>
+                            <option value="filmmaking">Filmmaking</option>
+                            <option value="gaming">Gaming</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="diy-crafts">DIY / Crafts</option>
+                            <option value="animation">Animation</option>
+                            <option value="design">Design</option>
+                        </optgroup>
+                        <optgroup label="Social / Culture">
+                            <option value="relationships">Relationships</option>
+                            <option value="dating">Dating</option>
+                            <option value="parenting">Parenting</option>
+                            <option value="education">Education</option>
+                            <option value="news-commentary">News & Commentary</option>
+                            <option value="memes-humor">Memes & Humor</option>
+                            <option value="pop-culture">Pop Culture</option>
+                            <option value="politics">Politics</option>
+                            <option value="language-learning">Language Learning</option>
+                            <option value="philosophy">Philosophy</option>
+                        </optgroup>
+                        <optgroup label="Niche Subcultures">
+                            <option value="indie-hackers">Indie Hackers</option>
+                            <option value="solopreneurs">Solopreneurs</option>
+                            <option value="fire">FIRE (Financial Independence, Retire Early)</option>
+                            <option value="booktok-book-twitter">Booktok / Book Twitter</option>
+                            <option value="fitness-twitter">Fitness Twitter</option>
+                            <option value="dev-twitter">Dev Twitter</option>
+                            <option value="money-twitter">Money Twitter</option>
+                            <option value="crypto-twitter">Crypto Twitter</option>
+                            <option value="ai-twitter">AI Twitter</option>
+                            <option value="writing-twitter">Writing Twitter</option>
+                            <option value="design-twitter">Design Twitter</option>
+                            <option value="meme-creators">Meme Creators</option>
+                        </optgroup>
+                        <optgroup label="Industry-Specific Niches">
+                            <option value="healthcare">Healthcare</option>
+                            <option value="legal">Legal</option>
+                            <option value="education-edtech">Education / EdTech</option>
+                            <option value="hospitality">Hospitality</option>
+                            <option value="logistics">Logistics</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="agriculture">Agriculture</option>
+                            <option value="government-policy">Government / Policy</option>
+                            <option value="energy-sustainability">Energy / Sustainability</option>
+                            <option value="aerospace">Aerospace</option>
+                            <option value="automotive">Automotive</option>
+                            <option value="sports-sports-tech">Sports / Sports Tech</option>
+                        </optgroup>
+                        <option value="custom">Enter Custom Niche...</option>
                     </select>
+                    <input type="text" id="customNiche" name="customNiche" style="display: none; width: 100%; margin-top: 5px; padding: 12px;" placeholder="Type your custom niche here">
                     <small id="niche-help" style="color: #888; font-size: 0.9em;">
-                        Choose the industry context for your content
+                        Choose or enter the context for your content
                     </small>
                 </div>
 
@@ -168,6 +257,17 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nicheSelect = new Choices('#niche', {
+                searchEnabled: true,
+                searchChoices: true,
+                itemSelectText: '',
+                shouldSort: false
+            });
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ let lastParsedJson = null; // Store the last successfully parsed JSON
 document.addEventListener('DOMContentLoaded', async () => {
     await testBackendConnection();
     addClearButton(); // Add clear button on load
+    initializeNicheSuggestions();
 });
 
 async function testBackendConnection() {
@@ -75,7 +76,9 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
     e.preventDefault();
     
     const topic = document.getElementById('topic').value.trim();
-    const niche = document.getElementById('niche').value;
+    const nicheSelect = document.getElementById('niche').value;
+    const customNiche = document.getElementById('customNiche').value.trim();
+    const niche = customNiche || nicheSelect;
     const numHooks = parseInt(document.getElementById('numHooks')?.value) || 3;
     const numHeadlines = parseInt(document.getElementById('numHeadlines')?.value) || 3;
     const numSections = parseInt(document.getElementById('numSections')?.value) || 3;
@@ -88,6 +91,11 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
     
     if (topic.length > 100) {
         showStatus('Topic must be 100 characters or less', 'error');
+        return;
+    }
+    
+    if (!niche || (niche === 'custom' && !customNiche)) {
+        showStatus('Please select or enter a niche', 'error');
         return;
     }
     
@@ -238,7 +246,7 @@ function formatReadableJson(obj) {
     if (obj.hooks && Array.isArray(obj.hooks)) {
         html += '<div class="section"><h4>🎣 HOOKS</h4><ul class="json-list">\n';
         obj.hooks.forEach((hook, index) => {
-            html += `<li>${index + 1}. <span class="value">${escapeHtml(hook)}</span></li>\n`; // Changed to .value
+            html += `<li>${index + 1}. <span class="value">${escapeHtml(hook)}</span></li>\n`;
         });
         html += '</ul></div><div class="section-spacer"></div>\n';
     }
@@ -246,7 +254,7 @@ function formatReadableJson(obj) {
     if (obj.headlines && Array.isArray(obj.headlines)) {
         html += '<div class="section"><h4>📰 HEADLINES</h4><ul class="json-list">\n';
         obj.headlines.forEach((headline, index) => {
-            html += `<li>${index + 1}. <span class="value">${escapeHtml(headline)}</span></li>\n`; // Changed to .value
+            html += `<li>${index + 1}. <span class="value">${escapeHtml(headline)}</span></li>\n`;
         });
         html += '</ul></div><div class="section-spacer"></div>\n';
     }
@@ -254,12 +262,12 @@ function formatReadableJson(obj) {
     if (obj.outline) {
         html += '<div class="section"><h4>📋 OUTLINE</h4>\n';
         if (obj.outline.intro) {
-            html += `<p><strong>Intro:</strong> <span class="value">${escapeHtml(obj.outline.intro)}</span></p>\n`; // Changed to .value
+            html += `<p><strong>Intro:</strong> <span class="value">${escapeHtml(obj.outline.intro)}</span></p>\n`;
         }
         if (obj.outline.sections && Array.isArray(obj.outline.sections)) {
             html += '<ul class="json-list">\n';
             obj.outline.sections.forEach((section, index) => {
-                html += `<li>${index + 1}. <span class="value">${escapeHtml(section)}</span></li>\n`; // Changed to .value
+                html += `<li>${index + 1}. <span class="value">${escapeHtml(section)}</span></li>\n`;
             });
             html += '</ul>\n';
         }
@@ -269,7 +277,7 @@ function formatReadableJson(obj) {
     if (obj.tweets && Array.isArray(obj.tweets)) {
         html += '<div class="section"><h4>🐦 TWEETS</h4><ul class="json-list">\n';
         obj.tweets.forEach((tweet, index) => {
-            html += `<li>${index + 1}. <span class="value">${escapeHtml(tweet)}</span></li>\n`; // Changed to .value
+            html += `<li>${index + 1}. <span class="value">${escapeHtml(tweet)}</span></li>\n`;
         });
         html += '</ul></div>\n';
     }
@@ -402,18 +410,158 @@ function addClearButton() {
 function clearOutput() {
     const form = document.getElementById('generateForm');
     if (form) {
-        form.reset(); // Reset form fields
+        form.reset();
     }
     const outputDiv = document.getElementById('output');
     if (outputDiv) {
-        outputDiv.innerHTML = ''; // Clear output
+        outputDiv.innerHTML = '';
     }
     const copyBtn = document.getElementById('copyBtn');
     if (copyBtn) {
-        copyBtn.style.display = 'none'; // Hide copy button
+        copyBtn.style.display = 'none';
     }
-    lastParsedJson = null; // Reset stored JSON
+    lastParsedJson = null;
     showStatus('Content cleared', 'success');
+}
+
+function toggleCustomNiche(select) {
+    const customInput = document.getElementById('customNiche');
+    if (select.value === 'custom') {
+        customInput.style.display = 'block';
+        customInput.focus();
+    } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+    }
+}
+
+function initializeNicheSuggestions() {
+    const nicheSelect = document.getElementById('niche');
+    const topicInput = document.getElementById('topic');
+    const suggestBtn = document.getElementById('suggestTopicBtn');
+
+    nicheSelect.addEventListener('change', function() {
+        const niche = this.value;
+        const examples = {
+            "entrepreneurship": "e.g., Starting a Business in 2025",
+            "startups": "e.g., Top Startup Ideas",
+            "freelancing": "e.g., Freelance Writing Tips",
+            "marketing": "e.g., Digital Marketing Trends",
+            "personal-branding": "e.g., Building Your Personal Brand",
+            "motivation-self-improvement": "e.g., Daily Motivation Hacks",
+            "side-hustles": "e.g., Best Side Hustle Ideas",
+            "remote-work-digital-nomad": "e.g., Remote Work Tools",
+            "tech-ai": "e.g., AI Innovations",
+            "crypto-web3": "e.g., Web3 Explained",
+            "investing": "e.g., Beginner Investing Tips",
+            "stock-market": "e.g., Stock Market Trends",
+            "real-estate": "e.g., Real Estate Investing",
+            "e-commerce": "e.g., E-commerce Strategies",
+            "saas": "e.g., SaaS Product Ideas",
+            "small-business": "e.g., Small Business Tips",
+            "business-strategy": "e.g., Business Growth Plans",
+            "passive-income": "e.g., Passive Income Streams",
+            "dropshipping": "e.g., Dropshipping Guide",
+            "finance-tips": "e.g., Financial Planning",
+            "budgeting-saving": "e.g., Budgeting Apps",
+            "taxes": "e.g., Tax Saving Tips",
+            "crypto-nfts": "e.g., NFT Market Trends",
+            "venture-capital": "e.g., VC Funding Guide",
+            "social-media-marketing": "e.g., Instagram Strategies",
+            "email-marketing": "e.g., Email Campaign Ideas",
+            "seo": "e.g., SEO Tips for 2025",
+            "copywriting": "e.g., Copywriting Techniques",
+            "content-marketing": "e.g., Content Strategy",
+            "sales-funnels": "e.g., Sales Funnel Design",
+            "cold-outreach": "e.g., Cold Email Templates",
+            "branding": "e.g., Brand Identity Tips",
+            "influencer-marketing": "e.g., Influencer Collaborations",
+            "affiliate-marketing": "e.g., Affiliate Programs",
+            "marketing-psychology": "e.g., Consumer Behavior",
+            "analytics-metrics": "e.g., Marketing Analytics",
+            "artificial-intelligence": "e.g., AI Tools Review",
+            "machine-learning": "e.g., ML Applications",
+            "software-development": "e.g., Coding Tips",
+            "web-development": "e.g., Web Design Trends",
+            "mobile-apps": "e.g., App Development Ideas",
+            "blockchain": "e.g., Blockchain Basics",
+            "cybersecurity": "e.g., Security Best Practices",
+            "data-science": "e.g., Data Analysis Techniques",
+            "cloud-computing": "e.g., Cloud Solutions",
+            "ui-ux-design": "e.g., UI/UX Trends",
+            "no-code-low-code": "e.g., No-Code Platforms",
+            "productivity": "e.g., Productivity Hacks",
+            "mindfulness": "e.g., Mindfulness Exercises",
+            "mental-health": "e.g., Stress Management",
+            "fitness": "e.g., Home Workout Plans",
+            "diet-nutrition": "e.g., Healthy Recipes",
+            "minimalism": "e.g., Minimalist Living",
+            "habit-building": "e.g., Habit Formation",
+            "journaling": "e.g., Journal Prompts",
+            "time-management": "e.g., Time Management Tips",
+            "stoicism": "e.g., Stoic Principles",
+            "psychology": "e.g., Psychological Insights",
+            "daily-routines": "e.g., Morning Routines",
+            "writing": "e.g., Writing Tips",
+            "art-illustration": "e.g., Drawing Techniques",
+            "music": "e.g., Music Production",
+            "photography": "e.g., Photography Tips",
+            "filmmaking": "e.g., Filmmaking Basics",
+            "gaming": "e.g., Gaming Guides",
+            "fashion": "e.g., Fashion Trends",
+            "diy-crafts": "e.g., DIY Projects",
+            "animation": "e.g., Animation Tips",
+            "design": "e.g., Design Ideas",
+            "relationships": "e.g., Relationship Advice",
+            "dating": "e.g., Dating Tips",
+            "parenting": "e.g., Parenting Hacks",
+            "education": "e.g., Learning Tips",
+            "news-commentary": "e.g., Current Events",
+            "memes-humor": "e.g., Funny Memes",
+            "pop-culture": "e.g., Pop Culture Trends",
+            "politics": "e.g., Political Analysis",
+            "language-learning": "e.g., Learn Spanish",
+            "philosophy": "e.g., Philosophical Ideas",
+            "indie-hackers": "e.g., Indie Hacker Tips",
+            "solopreneurs": "e.g., Solopreneur Strategies",
+            "fire": "e.g., FIRE Movement",
+            "booktok-book-twitter": "e.g., Book Reviews",
+            "fitness-twitter": "e.g., Fitness Tips",
+            "dev-twitter": "e.g., Dev Community",
+            "money-twitter": "e.g., Money Tips",
+            "crypto-twitter": "e.g., Crypto News",
+            "ai-twitter": "e.g., AI Discussions",
+            "writing-twitter": "e.g., Writing Community",
+            "design-twitter": "e.g., Design Trends",
+            "meme-creators": "e.g., Meme Ideas",
+            "healthcare": "e.g., Healthcare Tips",
+            "legal": "e.g., Legal Advice",
+            "education-edtech": "e.g., EdTech Tools",
+            "hospitality": "e.g., Hospitality Trends",
+            "logistics": "e.g., Logistics Strategies",
+            "manufacturing": "e.g., Manufacturing Tips",
+            "agriculture": "e.g., Farming Techniques",
+            "government-policy": "e.g., Policy Insights",
+            "energy-sustainability": "e.g., Sustainable Energy",
+            "aerospace": "e.g., Aerospace Innovations",
+            "automotive": "e.g., Car Tech",
+            "sports-sports-tech": "e.g., Sports Tech"
+        };
+        topicInput.placeholder = examples[niche] || "e.g., Enter your topic here";
+    });
+
+    suggestBtn.addEventListener('click', function() {
+        const niche = nicheSelect.value;
+        const suggestions = {
+            "entrepreneurship": ["Starting a Business in 2025", "Scaling a Startup"],
+            "tech-ai": ["AI Tools Review", "Future of AI"],
+            "budgeting-saving": ["Budgeting Apps", "Saving Tips"],
+            // Add more suggestions for all niches as needed...
+            "sports-sports-tech": ["Sports Tech Innovations", "Fitness Wearables"]
+        };
+        const suggestion = suggestions[niche]?.[Math.floor(Math.random() * suggestions[niche].length)] || "Trending Topic";
+        topicInput.value = suggestion;
+    });
 }
 
 const style = document.createElement('style');
@@ -493,16 +641,16 @@ style.textContent = `
     }
     
     .json-output {
-        background-color: #2c2c2c; /* Matches your theme */
-        border: 1px solid #3a3a3a; /* Subtle border */
+        background-color: #2c2c2c;
+        border: 1px solid #3a3a3a;
         border-radius: 5px;
         padding: 15px;
         margin-top: 10px;
     }
     
     .section {
-        background-color: #3a3a3a; /* Matches your output background */
-        border: 1px solid #444444; /* Matches your output border */
+        background-color: #3a3a3a;
+        border: 1px solid #444444;
         border-radius: 4px;
         padding: 10px;
         margin-bottom: 10px;
@@ -529,7 +677,7 @@ style.textContent = `
     }
     
     .value {
-        color: #ffffff; /* White text for dark theme */
+        color: #ffffff;
         font-weight: normal;
     }
     
