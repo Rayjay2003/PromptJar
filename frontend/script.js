@@ -78,7 +78,7 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
     const topic = document.getElementById('topic').value.trim();
     const nicheSelect = document.getElementById('niche').value;
     const customNiche = document.getElementById('customNiche').value.trim();
-    const niche = customNiche || nicheSelect;
+    const niche = nicheSelect === 'custom' ? customNiche : nicheSelect;
     const numHooks = parseInt(document.getElementById('numHooks')?.value) || 3;
     const numHeadlines = parseInt(document.getElementById('numHeadlines')?.value) || 3;
     const numSections = parseInt(document.getElementById('numSections')?.value) || 3;
@@ -94,7 +94,7 @@ document.getElementById('generateForm').addEventListener('submit', async (e) => 
         return;
     }
     
-    if (!niche || (niche === 'custom' && !customNiche)) {
+    if (!niche || (nicheSelect === 'custom' && !customNiche)) {
         showStatus('Please select or enter a niche', 'error');
         return;
     }
@@ -428,9 +428,11 @@ function toggleCustomNiche(select) {
     const customInput = document.getElementById('customNiche');
     if (select.value === 'custom') {
         customInput.style.display = 'block';
+        customInput.required = true; // Ensure it's required when visible
         customInput.focus();
     } else {
         customInput.style.display = 'none';
+        customInput.required = false; // Remove required when hidden
         customInput.value = '';
     }
 }
@@ -440,6 +442,7 @@ function initializeNicheSuggestions() {
     const topicInput = document.getElementById('topic');
     const suggestBtn = document.getElementById('suggestTopicBtn');
 
+    // Update placeholder based on niche selection
     nicheSelect.addEventListener('change', function() {
         const niche = this.value;
         const examples = {
@@ -550,13 +553,22 @@ function initializeNicheSuggestions() {
         topicInput.placeholder = examples[niche] || "e.g., Enter your topic here";
     });
 
+    // Hide Suggest Topic button when typing starts
+    topicInput.addEventListener('input', function() {
+        if (this.value.length > 0) {
+            suggestBtn.style.display = 'none';
+        } else {
+            suggestBtn.style.display = 'block';
+        }
+    });
+
+    // Suggest topic button functionality
     suggestBtn.addEventListener('click', function() {
         const niche = nicheSelect.value;
         const suggestions = {
             "entrepreneurship": ["Starting a Business in 2025", "Scaling a Startup"],
             "tech-ai": ["AI Tools Review", "Future of AI"],
             "budgeting-saving": ["Budgeting Apps", "Saving Tips"],
-            // Add more suggestions for all niches as needed...
             "sports-sports-tech": ["Sports Tech Innovations", "Fitness Wearables"]
         };
         const suggestion = suggestions[niche]?.[Math.floor(Math.random() * suggestions[niche].length)] || "Trending Topic";
