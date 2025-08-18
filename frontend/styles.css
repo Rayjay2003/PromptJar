@@ -480,8 +480,8 @@ body {
     }
 }
 
-/* Custom niche input */
-#customNiche {
+/* Custom niche input - Enhanced specificity */
+.input-group #customNiche {
     display: none;
     width: 100%;
     margin-top: 5px;
@@ -495,7 +495,11 @@ body {
     transition: all 0.3s ease;
 }
 
-#customNiche:focus {
+.input-group #customNiche.custom-niche-visible {
+    display: block !important; /* Force visibility when toggled */
+}
+
+.input-group #customNiche:focus {
     background: #444444;
     border-color: #00cc99;
     box-shadow: 0 0 0 2px rgba(0, 204, 153, 0.2);

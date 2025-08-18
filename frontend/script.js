@@ -427,11 +427,11 @@ function clearOutput() {
 function toggleCustomNiche(select) {
     const customInput = document.getElementById('customNiche');
     if (select.value === 'custom') {
-        customInput.style.display = 'block';
+        customInput.classList.add('custom-niche-visible');
         customInput.required = true; // Ensure it's required when visible
         customInput.focus();
     } else {
-        customInput.style.display = 'none';
+        customInput.classList.remove('custom-niche-visible');
         customInput.required = false; // Remove required when hidden
         customInput.value = '';
     }
