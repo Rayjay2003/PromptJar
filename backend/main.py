@@ -130,7 +130,7 @@ async def generate(data: InputData):
     if not data.topic.strip() or len(data.topic) > 100:
         raise HTTPException(status_code=400, detail="Topic must be between 1 and 100 characters")
     
-    # Allow custom niches by checking if it's in NICHES or a valid string
+    # Allow custom niches by checking if it's in NICHES or a valid strin
     if data.niche not in NICHES and not data.niche.strip():
         raise HTTPException(status_code=400, detail="Invalid or empty niche. Please select from the list or enter a valid custom niche")
     
